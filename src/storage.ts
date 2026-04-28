@@ -1,11 +1,11 @@
-import { mkdtempSync, writeFileSync, renameSync, chmodSync, existsSync, readFileSync, copyFileSync } from "fs"
-import { tmpdir, homedir } from "os"
+import { mkdirSync, writeFileSync, renameSync, chmodSync, existsSync, readFileSync, copyFileSync } from "fs"
+
 import { join } from "path"
 import type { AccountsFile, RotationState } from "./types.js"
 
-const DIR = join(homedir(), ".config", "opencode")
-const FILE = join(DIR, "opencode-go-accounts.json")
-const STATE_FILE = join(DIR, "opencode-go-rotation.json")
+function dir() { return join(process.env.HOME ?? "/root", ".config", "opencode") }
+function file() { return join(dir(), "opencode-go-accounts.json") }
+function stateFile() { return join(dir(), "opencode-go-rotation.json") }
 const PERMS = 0o600
 
 function newFile(): AccountsFile {
@@ -17,32 +17,35 @@ function newState(): RotationState {
 }
 
 function atomicWrite(path: string, data: string) {
-  const d = mkdtempSync(join(tmpdir(), "go-multi-auth-"))
-  const tmp = join(d, "tmp.json")
+  const d = dir()
+  mkdirSync(d, { recursive: true })
+  const tmp = path + ".tmp." + process.pid
   writeFileSync(tmp, data, "utf-8")
   chmodSync(tmp, PERMS)
   renameSync(tmp, path)
 }
 
 export function loadAccounts(): AccountsFile {
-  if (!existsSync(FILE)) return newFile()
+  const f = file()
+  if (!existsSync(f)) return newFile()
   try {
-    const raw = readFileSync(FILE, "utf-8")
+    const raw = readFileSync(f, "utf-8")
     return JSON.parse(raw) as AccountsFile
   } catch {
-    copyFileSync(FILE, FILE + ".bak." + Date.now())
+    copyFileSync(f, f + ".bak." + Date.now())
     return newFile()
   }
 }
 
 export function saveAccounts(data: AccountsFile) {
-  atomicWrite(FILE, JSON.stringify(data, null, 2) + "\n")
+  atomicWrite(file(), JSON.stringify(data, null, 2) + "\n")
 }
 
 export function loadRotationState(): RotationState {
-  if (!existsSync(STATE_FILE)) return newState()
+  const sf = stateFile()
+  if (!existsSync(sf)) return newState()
   try {
-    const raw = readFileSync(STATE_FILE, "utf-8")
+    const raw = readFileSync(sf, "utf-8")
     return JSON.parse(raw) as RotationState
   } catch {
     return newState()
@@ -50,5 +53,5 @@ export function loadRotationState(): RotationState {
 }
 
 export function saveRotationState(state: RotationState) {
-  atomicWrite(STATE_FILE, JSON.stringify(state) + "\n")
+  atomicWrite(stateFile(), JSON.stringify(state) + "\n")
 }

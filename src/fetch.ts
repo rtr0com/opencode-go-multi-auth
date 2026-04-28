@@ -6,7 +6,7 @@ export interface RotatingFetchState {
   exhausted: Set<number>
 }
 
-type FetchFn = typeof globalThis.fetch
+type FetchFn = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 
 export function createRotatingFetch(
   accounts: GoAccount[],
@@ -49,8 +49,10 @@ export function createRotatingFetch(
       // Rate limited — mark exhausted, try next
       state.exhausted.add(current.index)
 
+      // Check if next candidate is also exhausted (all accounts tried)
+      let nextResult: { account: GoAccount; index: number }
       try {
-        current = selectAccount(accounts, current.index)
+        nextResult = selectAccount(accounts, current.index)
       } catch (err) {
         if (err instanceof NoEnabledAccounts) {
           return new Response("all Go accounts exhausted", {
@@ -60,6 +62,15 @@ export function createRotatingFetch(
         }
         throw err
       }
+
+      if (state.exhausted.has(nextResult.index)) {
+        return new Response("all Go accounts exhausted", {
+          status: 429,
+          statusText: "All accounts rate-limited",
+        })
+      }
+
+      current = nextResult
     }
   }
 
