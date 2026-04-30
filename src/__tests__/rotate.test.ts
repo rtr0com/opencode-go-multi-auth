@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test"
-import { nextIndex, hasAccounts, selectAccount, NoEnabledAccounts } from "../rotate.js"
-import type { GoAccount } from "../types.js"
+import { nextIndex, hasAccounts, selectAccount, NoEnabledAccounts } from "../rotate"
+import type { GoAccount } from "../types"
 
 const mk = (apiKey: string, enabled: boolean): GoAccount => ({
   apiKey,

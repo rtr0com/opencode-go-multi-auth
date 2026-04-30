@@ -4,9 +4,14 @@
   "version": "0.1.0",
   "description": "Multi-account API key rotation for OpenCode Go subscription",
   "type": "module",
-  "main": "./dist/index.mjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.mjs"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
   },
   "files": [
     "dist",
@@ -14,7 +19,7 @@
     "package.json"
   ],
   "scripts": {
-    "build": "bun build ./src/index.ts --outfile dist/index.mjs --format esm --target node",
+    "build": "tsc -p tsconfig.build.json && bun build ./src/index.ts --outfile dist/index.js --format esm --target node",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
@@ -25,10 +30,13 @@
     "plugin"
   ],
   "license": "MIT",
+  "peerDependencies": {
+    "@opencode-ai/plugin": "*"
+  },
   "devDependencies": {
     "@opencode-ai/plugin": "^1.3.2",
     "@types/bun": "^1.3.13",
     "@types/node": "^25.6.0",
     "typescript": "^5.8.0"
-  }
+}
 }

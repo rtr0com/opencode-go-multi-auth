@@ -1,8 +1,8 @@
 import readline from "node:readline"
 import type { Plugin } from "@opencode-ai/plugin"
-import { loadAccounts, saveAccounts, loadRotationState, saveRotationState } from "./storage.js"
-import { selectAccount, hasAccounts } from "./rotate.js"
-import { createRotatingFetch } from "./fetch.js"
+import { loadAccounts, saveAccounts, loadRotationState, saveRotationState } from "./storage"
+import { selectAccount, hasAccounts } from "./rotate"
+import { createRotatingFetch } from "./fetch"
 
 function ask(q: readline.Interface, question: string): Promise<string> {
   return new Promise((resolve) => q.question(question, resolve))

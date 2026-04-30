@@ -1,5 +1,5 @@
-import type { GoAccount } from "./types.js"
-import { selectAccount, NoEnabledAccounts } from "./rotate.js"
+import type { GoAccount } from "./types"
+import { selectAccount, NoEnabledAccounts } from "./rotate"
 
 export interface RotatingFetchState {
   activeIndex: number | null

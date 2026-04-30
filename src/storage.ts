@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync, renameSync, chmodSync, existsSync, readFileSync, copyFileSync } from "fs"
 
 import { join } from "path"
-import type { AccountsFile, RotationState } from "./types.js"
+import type { AccountsFile, RotationState } from "./types"
 
 function dir() { return join(process.env.HOME ?? "/root", ".config", "opencode") }
 function file() { return join(dir(), "opencode-go-accounts.json") }

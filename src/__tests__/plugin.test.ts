@@ -3,7 +3,7 @@ import type { Plugin } from "@opencode-ai/plugin"
 
 describe("plugin", () => {
   it("exports a default function matching Plugin type", async () => {
-    const mod = await import("../index.js")
+    const mod = await import("../index")
     expect(typeof mod.default).toBe("function")
 
     const result = mod.default({
@@ -25,7 +25,7 @@ describe("plugin", () => {
   })
 
   it("has at least 3 auth methods", async () => {
-    const mod = await import("../index.js")
+    const mod = await import("../index")
     const result = mod.default({
       client: {} as any,
       project: {} as any,
@@ -40,7 +40,7 @@ describe("plugin", () => {
   })
 
   it("has Add Go Account method", async () => {
-    const mod = await import("../index.js")
+    const mod = await import("../index")
     const result = mod.default({
       client: {} as any,
       project: {} as any,

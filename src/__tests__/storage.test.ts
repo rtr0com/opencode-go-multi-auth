@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test"
 import { mkdtempSync, writeFileSync, mkdirSync, readdirSync, rmSync } from "fs"
 import { join } from "path"
 import { tmpdir } from "os"
-import { loadAccounts, saveAccounts, loadRotationState, saveRotationState } from "../storage.js"
+import { loadAccounts, saveAccounts, loadRotationState, saveRotationState } from "../storage"
 
 // storage.ts calls homedir() dynamically, so overriding HOME before each test works
 const origHome = process.env.HOME

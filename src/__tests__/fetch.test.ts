@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test"
-import { createRotatingFetch } from "../fetch.js"
-import type { GoAccount } from "../types.js"
+import { createRotatingFetch } from "../fetch"
+import type { GoAccount } from "../types"
 
 const mk = (apiKey: string): GoAccount => ({ apiKey, addedAt: Date.now(), enabled: true })
 
