@@ -24,7 +24,7 @@ describe("plugin", () => {
     expect(Array.isArray(hooks.auth!.methods)).toBe(true)
   })
 
-  it("has at least 3 auth methods", async () => {
+  it("has at least 1 auth method", async () => {
     const mod = await import("../index")
     const result = mod.default({
       client: {} as any,
@@ -36,7 +36,7 @@ describe("plugin", () => {
       $: null as any,
     })
     const hooks = await result
-    expect(hooks.auth!.methods.length).toBeGreaterThanOrEqual(3)
+    expect(hooks.auth!.methods.length).toBeGreaterThanOrEqual(1)
   })
 
   it("has Add Go Account method", async () => {

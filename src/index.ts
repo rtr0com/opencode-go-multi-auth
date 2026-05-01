@@ -1,24 +1,8 @@
-import readline from "node:readline"
 import type { Plugin } from "@opencode-ai/plugin"
 import { loadAccounts, saveAccounts, loadRotationState, saveRotationState } from "./storage"
 import { selectAccount, hasAccounts } from "./rotate"
 import { createRotatingFetch } from "./fetch"
-
-function ask(q: readline.Interface, question: string): Promise<string> {
-  return new Promise((resolve) => q.question(question, resolve))
-}
-
-function fmtAccounts(data: ReturnType<typeof loadAccounts>) {
-  const lines: string[] = []
-  for (let i = 0; i < data.accounts.length; i++) {
-    const acct = data.accounts[i]
-    const label = acct.label || `Account ${i + 1}`
-    const status = acct.enabled ? "enabled" : "disabled"
-    const active = i === data.rotationIndex ? " (active)" : ""
-    lines.push(`  ${i + 1}. ${label} [${status}]${active}`)
-  }
-  return lines.join("\n")
-}
+import { log } from "./logger"
 
 const plugin: Plugin = async ({ client }) => {
   const authClient = client as any
@@ -30,7 +14,10 @@ const plugin: Plugin = async ({ client }) => {
         const data = loadAccounts()
         const state = loadRotationState()
 
-        if (!hasAccounts(data.accounts)) return {}
+        if (!hasAccounts(data.accounts)) {
+          log("warn", "loader skipped", { reason: "no enabled accounts" })
+          return {}
+        }
 
         const { account, index } = selectAccount(data.accounts, state.lastUsedIndex)
         data.rotationIndex = index
@@ -43,6 +30,12 @@ const plugin: Plugin = async ({ client }) => {
         })
 
         const { fetch } = createRotatingFetch(data.accounts, state.lastUsedIndex)
+
+        log("info", "loader active", {
+          account: account.label || `account-${index}`,
+          index,
+          total: data.accounts.length,
+        })
 
         return {
           apiKey: "",
@@ -72,10 +65,7 @@ const plugin: Plugin = async ({ client }) => {
               enabled: true,
             })
 
-            if (data.accounts.length === 1) {
-              data.rotationIndex = 0
-            }
-
+            if (data.accounts.length === 1) data.rotationIndex = 0
             saveAccounts(data)
 
             await authClient.auth.set({
@@ -83,62 +73,12 @@ const plugin: Plugin = async ({ client }) => {
               body: { type: "api", key },
             })
 
+            log("info", "account added via auth login", {
+              label: label || `account-${data.accounts.length}`,
+              count: data.accounts.length,
+            })
+
             return { type: "success", key }
-          },
-        },
-        {
-          type: "oauth",
-          label: "Manage Accounts",
-          async authorize() {
-            const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-            try {
-              const data = loadAccounts()
-              if (data.accounts.length === 0) {
-                console.log("\nNo Go accounts configured.\n")
-              } else {
-                console.log("\nConfigured Go accounts:")
-                console.log(fmtAccounts(data))
-                const answer = await ask(rl, "\nEnter number to remove (or Enter to cancel): ")
-                const num = Number.parseInt(answer, 10) - 1
-                if (!Number.isNaN(num) && num >= 0 && num < data.accounts.length) {
-                  data.accounts.splice(num, 1)
-                  if (data.rotationIndex >= data.accounts.length) {
-                    data.rotationIndex = Math.max(0, data.accounts.length - 1)
-                  }
-                  saveAccounts(data)
-                  console.log(`Removed account ${num + 1}.\n`)
-                }
-              }
-            } finally {
-              rl.close()
-            }
-            return {
-              url: "",
-              instructions: "",
-              method: "auto" as const,
-              callback: () => Promise.resolve({ type: "failed" as const }),
-            }
-          },
-        },
-        {
-          type: "oauth",
-          label: "View Account Status",
-          async authorize() {
-            const data = loadAccounts()
-            if (data.accounts.length === 0) {
-              console.log("\nNo Go accounts configured.\n")
-            } else {
-              console.log("\nGo Account Status:")
-              console.log(fmtAccounts(data))
-              console.log(`\nRotation position: ${data.rotationIndex + 1} of ${data.accounts.length}`)
-              console.log()
-            }
-            return {
-              url: "",
-              instructions: "",
-              method: "auto" as const,
-              callback: () => Promise.resolve({ type: "failed" as const }),
-            }
           },
         },
       ],
