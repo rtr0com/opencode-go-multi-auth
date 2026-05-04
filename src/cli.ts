@@ -20,7 +20,7 @@ program
     for (let i = 0; i < data.accounts.length; i++) {
       const a = data.accounts[i]
       const label = a.label || `Account ${i + 1}`
-      const status = a.enabled ? "active" : "disabled"
+      const status = a.enabled ? "enabled" : "disabled"
       const mark = i === data.rotationIndex ? " ← current" : ""
       console.log(`  ${i + 1}. ${label} [${status}]${mark}`)
     }
